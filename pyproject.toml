@@ -24,6 +24,7 @@ classifiers = [
 requires-python = ">=3.12"
 dependencies = [
     "httpx~=0.28",
+    "platformdirs~=4.3",
 ]
 
 [project.urls]
@@ -33,9 +34,13 @@ Repository = "https://github.com/sco1/dl-vsix.git"
 Issues = "https://github.com/sco1/dl-vsix/issues"
 Changelog = "https://github.com/sco1/dl-vsix/blob/main/CHANGELOG.md"
 
+[project.scripts]
+dl_vsix = "dl_vsix.cli:main"
+
 [tool.uv]
 dev-dependencies = [
     "black~=25.0",
+    "cogapp~=3.5",
     "flake8~=7.1",
     "flake8-annotations~=3.1",
     "flake8-define-class-attributes~=0.2",
