@@ -52,7 +52,7 @@ dev-dependencies = [
     "pytest-cov~=6.0",
     "pytest-randomly~=3.16",
     "ruff~=0.9",
-    "rumdl~=0.0.117",
+    "rumdl~=0.0.120",
     "sco1-bumper~=2.0",
     "tox~=4.23",
     "tox-uv~=1.17",
@@ -85,7 +85,7 @@ warn_unused_ignores = true
 
 [tool.rumdl]
 line-length = 100
-disable = ["MD013", "MD033", "MD051"]
+disable = ["MD013", "MD033"]
 
 [tool.uv.build-backend]
 module-name = "dl_vsix"

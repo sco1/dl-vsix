@@ -5,7 +5,7 @@
 [![GitHub License](https://img.shields.io/github/license/sco1/dl-vsix?color=magenta)](https://github.com/sco1/dl-vsix/blob/main/LICENSE)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/sco1/dl-vsix/main.svg)](https://results.pre-commit.ci/latest/github/sco1/dl-vsix/main)
 
-Download VSIX bundles for offline extension installation
+Download VSIX bundles for offline extension installation.
 
 ## Installation
 
@@ -46,7 +46,7 @@ options:
 
 ### Extension Specification
 
-`dl-vsiz` provides two methods for identifying extension(s) to download. Note that these options are mutually exclusive.
+`dl-vsix` provides two methods for identifying extension(s) to download. Note that these options are mutually exclusive.
 
 #### Single Extension
 
@@ -64,3 +64,9 @@ Multiple packages may be specified using a JSON file. Extension IDs are assumed 
     ]
 }
 ```
+
+### Dependency Tracing
+
+Each VSIX package should have an `extension/package.json` detailing extension information; if an extension has additional dependencies, they should be declared in an `"extensionDependencies"` field as a list of extension ID strings.
+
+By default, `dl-vsix` will not trace these dependencies. To enable dependency tracing, use the `-f/--follow_deps` flag to trace the dependencies for each download extension & add them to the download queue if any are found.
