@@ -32,7 +32,7 @@ def _parse_extensions(spec_json: Path) -> list[Extension]:
 
 def main() -> None:  # noqa: D103
     parser = argparse.ArgumentParser(
-        "dl_VSIX", description="Download VSIX bundles for offline extension installation."
+        "dl_vsix", description="Download VSIX bundles for offline extension installation."
     )
     source_group = parser.add_mutually_exclusive_group()
     source_group.add_argument("extension", nargs="?", type=str, help="Single extension by ID")

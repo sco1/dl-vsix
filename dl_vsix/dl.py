@@ -8,6 +8,8 @@ from pathlib import Path
 
 import httpx
 
+from dl_vsix.extension_query import query_latest_version
+
 
 class Extension(t.NamedTuple):  # noqa: D101
     publisher: str
@@ -27,13 +29,12 @@ class Extension(t.NamedTuple):  # noqa: D101
         publisher, extension = extension_id.split(".")
         return cls(publisher=publisher, extension=extension)
 
-    @property
-    def vsix_query(self) -> str:
+    def vsix_query(self, version: str = "latest") -> str:
         """Build query URL for the extension's latest VSIX package."""
         api_base = f"https://{self.publisher}.gallery.vsassets.io/_apis/public/gallery"
         publisher_comp = f"publisher/{self.publisher}"
         extension_comp = f"extension/{self.extension}"
-        suffix = "latest/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage"
+        suffix = f"{version}/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage"
 
         return f"{api_base}/{publisher_comp}/{extension_comp}/{suffix}"
 
@@ -83,15 +84,18 @@ def download_extensions(
     with httpx.Client() as client:
         while extensions:
             ext = extensions.pop()
-            out_filepath = out_dir / f"{ext}.vsix"
-            with client.stream("GET", ext.vsix_query) as r:
+
+            latest_ver = query_latest_version(str(ext))
+            out_filepath = out_dir / f"{ext}_{latest_ver}.vsix"
+
+            with client.stream("GET", ext.vsix_query(version=latest_ver)) as r:
                 if r.status_code == httpx.codes.OK:
                     with out_filepath.open("wb") as f:
                         for chunk in r.iter_bytes():
                             f.write(chunk)
 
                     seen_extensions.add(ext)
-                    print(f"Successfully downloaded extension '{ext}'")
+                    print(f"Successfully downloaded extension '{ext}', version: {latest_ver}")
 
                 else:
                     print(f"Could not download extension '{ext}': {r.status_code}")

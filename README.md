@@ -23,7 +23,7 @@ cog.out(
 
 ```text
 $ dl_vsix --help
-usage: dl_VSIX [-h] [-s SPEC_FILE] [-o OUT_DIR] [-f] [-z] [extension]
+usage: dl_vsix [-h] [-s SPEC_FILE] [-o OUT_DIR] [-f] [-z] [extension]
 
 Download VSIX bundles for offline extension installation.
 
