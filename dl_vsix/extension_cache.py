@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import operator
 import shutil
 import typing as t
 from pathlib import Path
@@ -53,7 +54,7 @@ class CachedExtension(t.NamedTuple):  # noqa: D101
 class ExtensionCache:
     """VSIX extension cache manager."""
 
-    _package_cache: set[CachedExtension]
+    _package_cache: dict[dl.Extension, CachedExtension]
 
     def __init__(self, path_override: Path | None = None, cache_maxsize_mb: int = 512) -> None:
         """
@@ -86,15 +87,17 @@ class ExtensionCache:
         self._init_cache()
 
     def __contains__(self, item: object) -> bool:
-        if not isinstance(item, dl.Extension):
+        if isinstance(item, dl.Extension):
+            return item in self._package_cache
+        elif isinstance(item, CachedExtension):
+            return item.extension in self._package_cache
+        else:
             return False
-
-        raise NotImplementedError
 
     @property
     def cache_size(self) -> float:
         """Calculate the current cache size, as MB."""
-        total_bytes = sum(p.byte_size for p in self._package_cache)
+        total_bytes = sum(p.byte_size for p in self._package_cache.values())
         return bytes2megabytes(total_bytes)
 
     def _init_cache(self) -> None:
@@ -107,20 +110,34 @@ class ExtensionCache:
         """
         if self._cache_dir.exists():
             for f in self._cache_dir.glob("*.vsix", case_sensitive=False):
-                self._package_cache.add(CachedExtension.from_vsix_path(f))
+                ext = CachedExtension.from_vsix_path(f)
+                self._package_cache[ext.extension] = ext
         else:
             self._cache_dir.mkdir(parents=True)
-            self._package_cache = set()
+            self._package_cache = {}
 
-        # TODO: Check if cache needs to be pruned
-
-    def _prune_cache(self, bytes_needed: int) -> None:
+    def _prune_cache(self) -> None:
         """
-        Prune extensions until the necessary number of bytes have been recovered.
+        Prune extensions if total cache size exceeds the configured threshold.
 
         Packages are removed in reverse chronological order based on the file modification date.
         """
-        raise NotImplementedError
+        if self.cache_size <= self._maxsize_mb:
+            return
+
+        bytes_needed = (self.cache_size - self._maxsize_mb) * (1 << 20)
+        # Probably should have a more efficient way to maintain this, but fine for now
+        size_sorted = sorted(self._package_cache.values(), key=operator.attrgetter("created_at"))
+
+        to_purge = []
+        freed_bytes = 0
+        while freed_bytes < bytes_needed:
+            ext = size_sorted.pop()
+            freed_bytes += ext.byte_size
+            to_purge.append(ext)
+
+        for p in to_purge:
+            self.remove(p.extension)
 
     def info(self) -> None:
         """
@@ -146,34 +163,65 @@ class ExtensionCache:
             print("No cached extensions.")
         else:
             print("Cache contents:\n")
-            for p in self._package_cache:  # TODO: Sort this output by extension ID
+            name_sorted = sorted(self._package_cache.values(), key=operator.attrgetter("extension"))
+            for p in name_sorted:
                 print(f" - {p}")
 
-    def insert(self, vsix_filepath: Path) -> None:
-        """Copy the provided VSIX package into the cache."""
+    def insert(self, vsix_filepath: Path, force: bool = False) -> None:
+        """
+        Copy the provided VSIX package into the cache.
+
+        Copying is skipped if the VSIX package of the same version is already in the cache, unless
+        `force` is `True`.
+        """
+        pre = CachedExtension.from_vsix_path(vsix_filepath)  # To get version info
+        chk = self._package_cache.get(pre.extension, None)
+        if chk is not None:
+            if (chk.version == pre.version) and not force:
+                # Short circuit on same version
+                return
+
+            # Otherwise, assume we have downloaded a more recent version, or are forcing
+            # Upstream we are only downloading the most recent release, so not going to bother
+            # considering that we've downloaded an older version that what's in the cache
+            self.remove(pre.extension)
+
         dest = self._cache_dir / vsix_filepath.name
         shutil.copy2(vsix_filepath, dest)
 
-        # TODO: Check cache size
-        self._package_cache.add(CachedExtension.from_vsix_path(dest))
+        ext = CachedExtension.from_vsix_path(dest)
+        self._package_cache[ext.extension] = ext
+
+        self._prune_cache()
 
     def remove(self, extension: dl.Extension) -> None:
         """Remove the specified extension from the VSIX package cache."""
-        # TODO: Lookup extension from ID
-        # TODO: Delete extension from disk
-        # TODO: Delete extension from cache
-        raise NotImplementedError
+        ext = self._package_cache.pop(extension, None)
+        if ext is None:
+            # Package not in cache
+            print(f"Extension not in cache: '{extension}'")
+            return
+
+        ext.cache_path.unlink()
+        print(f"Extension removed from cache: {ext.cache_path.stem}")
 
     def purge(self) -> None:
         """Remove all VSIX packages from the cache."""
-        for p in self._package_cache:
+        for p in self._package_cache.values():
             p.cache_path.unlink()
 
-        self._package_cache = set()
+        self._package_cache = {}
         print("Extension cache purged.")
 
     def copy_to(self, extension: dl.Extension, dest: Path) -> Path:
         """Copy a cached VSIX package to the specified directory."""
-        # TODO: Lookup extension from ID
-        # TODO: Move extension to destination
-        raise NotImplementedError
+        if not dest.is_dir():
+            raise ValueError("Destination is not a directory or does not exist.")
+
+        ext = self._package_cache.get(extension, None)
+        if ext is None:
+            raise ValueError(f"Extension not available in cache: '{extension}'")
+
+        dest_filepath = dest / f"{ext.extension}_{ext.version}.vsix"
+        shutil.copy2(ext.cache_path, dest_filepath)
+        return dest_filepath

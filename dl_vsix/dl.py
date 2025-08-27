@@ -16,6 +16,11 @@ class Extension(t.NamedTuple):  # noqa: D101
     extension: str
 
     def __str__(self) -> str:
+        return self.pID
+
+    @property
+    def pID(self) -> str:
+        """Build the full extension ID, as `'<publisher>.<package>'`."""
         return f"{self.publisher}.{self.extension}"
 
     @classmethod
