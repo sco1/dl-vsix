@@ -52,6 +52,8 @@ def main() -> None:  # noqa: D103
     parser.add_argument("-z", "--zip", action="store_true", help="Zip the download extension(s)")
     args = parser.parse_args()
 
+    # TODO: Cache CLI
+
     # Since we have a mutually exclusive group, only one of these can be specified
     if args.extension is not None:
         extensions = [Extension.from_id(args.extension)]

@@ -75,6 +75,7 @@ def download_extensions(
     depends on any additional packages, which will be added to the queue if they haven't yet been
     downloaded.
     """
+    # TODO: Incorporate package cache
     if not out_dir.exists():
         raise ValueError(f"Specified output directory does not exist: '{out_dir}'")
 
