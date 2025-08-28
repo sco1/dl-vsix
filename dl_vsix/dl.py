@@ -8,6 +8,7 @@ from pathlib import Path
 
 import httpx
 
+from dl_vsix.extension_cache import ExtensionCache
 from dl_vsix.extension_query import query_latest_version
 
 
@@ -71,16 +72,19 @@ def extract_dependencies(vsix_zip: Path, target: str = "extension/package.json")
 def download_extensions(
     extensions: list[Extension],
     out_dir: Path,
+    package_cache: ExtensionCache,
     follow_dependencies: bool = True,
 ) -> None:
     """
     Download VSIX packages for the specified extension(s) from the VS marketplace Gallery API.
 
+    Download cache management is provided using an instance of `ExtensionCache` passed to
+    `package_cache`.
+
     If `follow_dependencies` is `True`, the extension's metadata will be checked to see if it
     depends on any additional packages, which will be added to the queue if they haven't yet been
     downloaded.
     """
-    # TODO: Incorporate package cache
     if not out_dir.exists():
         raise ValueError(f"Specified output directory does not exist: '{out_dir}'")
 
@@ -94,18 +98,25 @@ def download_extensions(
             latest_ver = query_latest_version(str(ext))
             out_filepath = out_dir / f"{ext}_{latest_ver}.vsix"
 
-            with client.stream("GET", ext.vsix_query(version=latest_ver)) as r:
-                if r.status_code == httpx.codes.OK:
-                    with out_filepath.open("wb") as f:
-                        for chunk in r.iter_bytes():
-                            f.write(chunk)
+            cached_ver = package_cache.cached_version(ext)
+            if (cached_ver is not None) and (cached_ver == latest_ver):
+                print(f"Cached download for '{ext}' found - version: {cached_ver}")
+                package_cache.copy_to(ext, out_dir)
+            else:
+                with client.stream("GET", ext.vsix_query(version=latest_ver)) as r:
+                    if r.status_code == httpx.codes.OK:
+                        with out_filepath.open("wb") as f:
+                            for chunk in r.iter_bytes():
+                                f.write(chunk)
 
-                    seen_extensions.add(ext)
-                    print(f"Successfully downloaded extension '{ext}', version: {latest_ver}")
+                        seen_extensions.add(ext)
+                        print(f"Successfully downloaded extension '{ext}', version: {latest_ver}")
 
-                else:
-                    print(f"Could not download extension '{ext}': {r.status_code}")
-                    continue
+                        # Add to cache
+                        package_cache.insert(out_filepath)
+                    else:
+                        print(f"Could not download extension '{ext}': {r.status_code}")
+                        continue
 
             if follow_dependencies:
                 dependencies = extract_dependencies(out_filepath)

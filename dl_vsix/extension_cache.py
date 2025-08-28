@@ -100,6 +100,14 @@ class ExtensionCache:
         total_bytes = sum(p.byte_size for p in self._package_cache.values())
         return bytes2megabytes(total_bytes)
 
+    def cached_version(self, extension: dl.Extension) -> str | None:
+        """Return the cached version of the query extension, or `None` if it is not in the cache."""
+        query = self._package_cache.get(extension, None)
+        if query is None:
+            return None
+        else:
+            return query.version
+
     def _init_cache(self) -> None:
         """
         Initialize the extension cache.
