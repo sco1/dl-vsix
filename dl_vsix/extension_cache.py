@@ -10,6 +10,8 @@ import platformdirs
 
 from dl_vsix import APPNAME, dl
 
+DEFAULT_CACHE_MAXSIZE_MB = 512
+
 
 def bytes2megabytes(n_bytes: int) -> float:  # noqa: D103
     return n_bytes / (1 << 20)
@@ -56,7 +58,9 @@ class ExtensionCache:
 
     _package_cache: dict[dl.Extension, CachedExtension]
 
-    def __init__(self, path_override: Path | None = None, cache_maxsize_mb: int = 512) -> None:
+    def __init__(
+        self, path_override: Path | None = None, cache_maxsize_mb: int = DEFAULT_CACHE_MAXSIZE_MB
+    ) -> None:
         """
         Initialize the extension cache.
 

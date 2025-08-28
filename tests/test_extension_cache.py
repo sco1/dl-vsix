@@ -93,6 +93,15 @@ def test_cache_size(tmp_path: Path) -> None:
     assert ec.cache_size == pytest.approx(0.95, abs=1e-2)
 
 
+def test_get_cached_version(tmp_path: Path) -> None:
+    filepath = tmp_path / "ms-python.python_1.0.vsix"
+    filepath.touch()
+    ec = ExtensionCache(path_override=tmp_path)
+
+    assert ec.cached_version(DUMMY_EXTENSION) == "1.0"
+    assert ec.cached_version(Extension.from_id("fake.package")) is None
+
+
 CONTAINS_CASES = (
     (DUMMY_EXTENSION, True),
     (DUMMY_PACKAGE, True),

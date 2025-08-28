@@ -195,6 +195,7 @@ source = { editable = "." }
 dependencies = [
     { name = "httpx" },
     { name = "platformdirs" },
+    { name = "typer-slim" },
 ]
 
 [package.dev-dependencies]
@@ -223,6 +224,7 @@ dev = [
 requires-dist = [
     { name = "httpx", specifier = "~=0.28" },
     { name = "platformdirs", specifier = "~=4.3" },
+    { name = "typer-slim", specifier = "~=0.16" },
 ]
 
 [package.metadata.requires-dev]
