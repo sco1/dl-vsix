@@ -83,7 +83,8 @@ def download(
     if extension_id and spec_file:
         raise ValueError("Cannot specify both an extension_id and spec file.")
 
-    if extension_id is not None:
+    # Options are mutually exclusive, which should be enforced at this point
+    if extension_id:
         extensions = [Extension.from_id(extension_id)]
     else:
         extensions = _parse_extensions(spec_file)
