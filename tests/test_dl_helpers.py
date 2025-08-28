@@ -5,6 +5,7 @@ def test_extension_roundtrip() -> None:
     sample_id = "ms-python.python"
     ext = Extension.from_id(sample_id)
 
+    assert Extension.from_id(ext.pID) == ext
     assert Extension.from_id(str(ext)) == ext
 
 

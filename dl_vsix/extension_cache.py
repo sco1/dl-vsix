@@ -108,13 +108,13 @@ class ExtensionCache:
 
         If the cache directory does not exist, an empty directory is created.
         """
+        self._package_cache = {}
         if self._cache_dir.exists():
             for f in self._cache_dir.glob("*.vsix", case_sensitive=False):
                 ext = CachedExtension.from_vsix_path(f)
                 self._package_cache[ext.extension] = ext
         else:
             self._cache_dir.mkdir(parents=True)
-            self._package_cache = {}
 
     def _prune_cache(self) -> None:
         """
@@ -125,9 +125,12 @@ class ExtensionCache:
         if self.cache_size <= self._maxsize_mb:
             return
 
+        print(f"Cache size exceeded: ({self.cache_size:0.2f} MB > {self._maxsize_mb:0.2f} MB)")
         bytes_needed = (self.cache_size - self._maxsize_mb) * (1 << 20)
         # Probably should have a more efficient way to maintain this, but fine for now
-        size_sorted = sorted(self._package_cache.values(), key=operator.attrgetter("created_at"))
+        size_sorted = sorted(
+            self._package_cache.values(), key=operator.attrgetter("created_at"), reverse=True
+        )
 
         to_purge = []
         freed_bytes = 0
@@ -151,9 +154,9 @@ class ExtensionCache:
         """
         print(
             (
-                f"Cache Location: {self._cache_dir}"
-                f"Cached Extensions: {len(self._package_cache)}"
-                f"Cache Size: {self.cache_size: 0.2f} / {self._maxsize_mb: 0.2f} MB"
+                f"Cache Location: {self._cache_dir}\n"
+                f"Cached Extensions: {len(self._package_cache)}\n"
+                f"Cache Size: {self.cache_size: 0.2f} / {self._maxsize_mb: 0.2f} MB\n"
             )
         )
 
