@@ -1,6 +1,6 @@
 [project]
 name = "dl-vsix"
-version = "0.1.0"
+version = "0.2.0"
 description = "Download VSIX bundles for offline extension installation"
 license = "MIT"
 license-files = ["LICENSE"]

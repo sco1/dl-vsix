@@ -23,26 +23,52 @@ cog.out(
 
 ```text
 $ dl_vsix --help
-usage: dl_vsix [-h] [-s SPEC_FILE] [-o OUT_DIR] [-f] [-z] [extension]
+Usage: dl_vsix [OPTIONS] COMMAND [ARGS]...
 
-Download VSIX bundles for offline extension installation.
+  Download VSIX bundles for offline extension installation.
 
-positional arguments:
-  extension             Single extension by ID
+Options:
+  --help  Show this message and exit.
 
-options:
-  -h, --help            show this help message and exit
-  -s, --spec_file SPEC_FILE
-                        JSON-specified collection of extensions
-  -o, --out_dir OUT_DIR
-                        Download directory (default: ./vsix)
-  -f, --follow_deps     Trace extension's dependencies.
-  -z, --zip             Zip the download extension(s)
+Commands:
+  download  Download VSIX extension packages.
+  cache     Package cache utilities
 ```
 
 <!-- [[[end]]] -->
 
 ## Usage
+
+Extension downloads are accomplished using the `dl_vsix download` command:
+<!-- [[[cog
+import cog
+from subprocess import PIPE, run
+out = run(["dl_vsix", "download", "--help"], stdout=PIPE, encoding="ascii")
+cog.out(
+    f"\n```text\n$ dl_vsix download --help\n{out.stdout.rstrip()}\n```\n\n"
+)
+]]] -->
+
+```text
+$ dl_vsix download --help
+Usage: dl_vsix download [OPTIONS] [EXTENSION_ID]
+
+  Download VSIX extension packages.
+
+  NOTE: `extension_id` and `spec_file` are mutually exclusive.
+
+Arguments:
+  [EXTENSION_ID]  Single extension by ID
+
+Options:
+  -s, --spec_file FILE     JSON-specified collection of extensions
+  -o, --out_dir DIRECTORY  Download directory  [default: vsix]
+  -f, --follow_deps        Trace extension's dependencies
+  -z, --zip                Zip the download extension(s)
+  --help                   Show this message and exit.
+```
+
+<!-- [[[end]]] -->
 
 ### Extension Specification
 
@@ -70,3 +96,41 @@ Multiple packages may be specified using a JSON file. Extension IDs are assumed 
 Each VSIX package should have an `extension/package.json` detailing extension information; if an extension has additional dependencies, they should be declared in an `"extensionDependencies"` field as a list of extension ID strings.
 
 By default, `dl-vsix` will not trace these dependencies. To enable dependency tracing, use the `-f/--follow_deps` flag to trace the dependencies for each download extension & add them to the download queue if any are found.
+
+## Download Caching
+
+`dl-vsix` implements a simple download cache to help prevent repeated downloads of the latest version of an extension. The cache is FIFO based on file modification date, as creation date is not available on all platforms.
+
+By default, this is located in the user's cache directory, as defined by [`platformdirs`](https://platformdirs.readthedocs.io/en/latest/). OS specific location information can be found under the [Platforms API documentation](https://platformdirs.readthedocs.io/en/latest/api.html#platforms). The cache directory can be overridden using the `DL_VSIX_CACHE_DIR` environment variable; note that changing this directory location does not erase existing contents, nor are existing contents transferred to this location.
+
+Cache size defaults to `512` MB, and is configurable using the `DL_VSIX_CACHE_SIZE` environment variable. Cache pruning is only conducted either when the tool initializes, or a new download is inserted into the cache.
+
+### CLI Interface
+
+Cache utilities are accessible via the `dl_vsix cache` command:
+<!-- [[[cog
+import cog
+from subprocess import PIPE, run
+out = run(["dl_vsix", "cache", "--help"], stdout=PIPE, encoding="ascii")
+cog.out(
+    f"\n```text\n$ dl_vsix cache --help\n{out.stdout.rstrip()}\n```\n\n"
+)
+]]] -->
+
+```text
+$ dl_vsix cache --help
+Usage: dl_vsix cache [OPTIONS] COMMAND [ARGS]...
+
+  Package cache utilities
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  info    Show cache information.
+  list    List cache contents.
+  remove  Remove extension(s) from cache.
+  purge   Clear package cache.
+```
+
+<!-- [[[end]]] -->
