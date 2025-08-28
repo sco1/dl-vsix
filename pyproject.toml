@@ -1,6 +1,6 @@
 [project]
 name = "dl-vsix"
-version = "0.1.0"
+version = "0.2.0"
 description = "Download VSIX bundles for offline extension installation"
 license = "MIT"
 license-files = ["LICENSE"]
@@ -25,6 +25,7 @@ requires-python = ">=3.12"
 dependencies = [
     "httpx~=0.28",
     "platformdirs~=4.3",
+    "typer-slim~=0.16",
 ]
 
 [project.urls]
@@ -35,7 +36,7 @@ Issues = "https://github.com/sco1/dl-vsix/issues"
 Changelog = "https://github.com/sco1/dl-vsix/blob/main/CHANGELOG.md"
 
 [project.scripts]
-dl_vsix = "dl_vsix.cli:main"
+dl_vsix = "dl_vsix.cli:dl_vsix_cli"
 
 [tool.uv]
 dev-dependencies = [
@@ -50,6 +51,7 @@ dev-dependencies = [
     "pytest~=8.3",
     "pytest-check~=2.4",
     "pytest-cov~=6.0",
+    "pytest-mock~=3.14",
     "pytest-randomly~=3.16",
     "ruff~=0.9",
     "rumdl~=0.0.120",
