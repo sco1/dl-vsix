@@ -98,7 +98,10 @@ def download(
 
 
 cache_sub = typer.Typer(
-    name="cache", no_args_is_help=True, add_completion=False, help="Package cache utilities"
+    name="cache",
+    no_args_is_help=True,
+    add_completion=False,
+    help="Package cache utilities",
 )
 dl_vsix_cli.add_typer(cache_sub)
 
