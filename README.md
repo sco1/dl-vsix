@@ -15,7 +15,7 @@ You can confirm proper installation via the `dl_vsix` CLI:
 <!-- [[[cog
 import cog
 from subprocess import PIPE, run
-out = run(["dl_vsix", "--help"], stdout=PIPE, encoding="ascii")
+out = run(["dl_vsix", "--help"], stdout=PIPE, encoding="ascii", env={"TYPER_USE_RICH": "0"})
 cog.out(
     f"\n```text\n$ dl_vsix --help\n{out.stdout.rstrip()}\n```\n\n"
 )
@@ -43,7 +43,7 @@ Extension downloads are accomplished using the `dl_vsix download` command:
 <!-- [[[cog
 import cog
 from subprocess import PIPE, run
-out = run(["dl_vsix", "download", "--help"], stdout=PIPE, encoding="ascii")
+out = run(["dl_vsix", "download", "--help"], stdout=PIPE, encoding="ascii", env={"TYPER_USE_RICH": "0"})
 cog.out(
     f"\n```text\n$ dl_vsix download --help\n{out.stdout.rstrip()}\n```\n\n"
 )
@@ -76,7 +76,7 @@ Options:
 
 #### Single Extension
 
-A single extension may be specified as a positional argument using the form  `<publisher>.<package>`, e.g. `ms-python.python`
+A single extension may be specified as a positional argument using the form `<publisher>.<package>`, e.g. `ms-python.python`
 
 #### JSON List
 
@@ -111,7 +111,7 @@ Cache utilities are accessible via the `dl_vsix cache` command:
 <!-- [[[cog
 import cog
 from subprocess import PIPE, run
-out = run(["dl_vsix", "cache", "--help"], stdout=PIPE, encoding="ascii")
+out = run(["dl_vsix", "cache", "--help"], stdout=PIPE, encoding="ascii", env={"TYPER_USE_RICH": "0"})
 cog.out(
     f"\n```text\n$ dl_vsix cache --help\n{out.stdout.rstrip()}\n```\n\n"
 )

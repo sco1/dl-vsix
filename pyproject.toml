@@ -23,9 +23,9 @@ classifiers = [
 
 requires-python = ">=3.12"
 dependencies = [
-    "httpx~=0.28",
+    "niquests~=3.18",
     "platformdirs~=4.3",
-    "typer-slim~=0.16",
+    "typer~=0.24",
 ]
 
 [project.urls]
@@ -38,23 +38,22 @@ Changelog = "https://github.com/sco1/dl-vsix/blob/main/CHANGELOG.md"
 [project.scripts]
 dl_vsix = "dl_vsix.cli:dl_vsix_cli"
 
-[tool.uv]
-dev-dependencies = [
-    "black~=25.0",
+[dependency-groups]
+dev = [
+    "black~=26.3",
     "cogapp~=3.5",
     "flake8~=7.1",
     "flake8-annotations~=3.1",
     "flake8-define-class-attributes~=0.2",
-    "isort~=6.0",
+    "isort~=8.0",
     "mypy~=1.14",
     "pre-commit~=4.0",
-    "pytest~=8.3",
-    "pytest-check~=2.4",
-    "pytest-cov~=6.0",
+    "pytest~=9.0",
+    "pytest-cov~=7.0",
     "pytest-mock~=3.14",
-    "pytest-randomly~=3.16",
+    "pytest-randomly~=4.0",
     "ruff~=0.9",
-    "rumdl~=0.0.120",
+    "rumdl~=0.1.64",
     "sco1-bumper~=2.0",
     "tox~=4.23",
     "tox-uv~=1.17",
@@ -94,5 +93,5 @@ module-name = "dl_vsix"
 module-root = ""
 
 [build-system]
-requires = ["uv_build"]
+requires = ["uv_build>=0.11.2,<0.12"]
 build-backend = "uv_build"
