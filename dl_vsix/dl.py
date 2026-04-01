@@ -6,7 +6,7 @@ import typing as t
 import zipfile
 from pathlib import Path
 
-import httpx
+import niquests
 
 from dl_vsix.extension_cache import ExtensionCache
 from dl_vsix.extension_query import query_latest_version
@@ -91,7 +91,7 @@ def download_extensions(
     # Track extensions already downloaded so we don't duplicate; mainly helpful when tracking
     # dependencies
     seen_extensions = set()
-    with httpx.Client() as client:
+    with niquests.Session() as session:
         while extensions:
             ext = extensions.pop()
 
@@ -103,10 +103,10 @@ def download_extensions(
                 print(f"Cached download for '{ext}' found - version: {cached_ver}")
                 package_cache.copy_to(ext, out_dir)
             else:
-                with client.stream("GET", ext.vsix_query(version=latest_ver)) as r:
-                    if r.status_code == httpx.codes.OK:
+                with session.get(ext.vsix_query(version=latest_ver), stream=True) as r:
+                    if r.ok:
                         with out_filepath.open("wb") as f:
-                            for chunk in r.iter_bytes():
+                            for chunk in r.iter_content(chunk_size=-1):
                                 f.write(chunk)
 
                         seen_extensions.add(ext)

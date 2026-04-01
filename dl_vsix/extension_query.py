@@ -2,7 +2,7 @@ import functools
 import json
 from enum import IntEnum
 
-import httpx
+import niquests
 
 
 class ExtensionQueryFlags(IntEnum):
@@ -98,11 +98,11 @@ def query_latest_version(extension_id: str) -> str:
         "flags": ored_flags,
     }
 
-    with httpx.Client() as client:
-        r = client.post(
+    with niquests.Session() as session:
+        r = session.post(
             BASE_URL,
             # Doesn't seem to work without pre-stringify
-            data=json.dumps(data),  # type: ignore[arg-type]
+            data=json.dumps(data),
             headers=HEADER,
         )
         r.raise_for_status()
